@@ -1,7 +1,10 @@
 package ru.vinninvkz.pastecase.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.stereotype.Service;
 import ru.vinninvkz.pastecase.api.request.PasteCaseRequest;
 import ru.vinninvkz.pastecase.api.request.PublicStatus;
@@ -16,12 +19,15 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@ConfigurationProperties(prefix = "app")
+//@ConfigurationPropertiesScan
 public class PasteCaseServiceImpl implements PasteCaseService{
     private final PasteCaseRepository repository;
-    private int idGenerator = 0;
-    private String host = "http://pastecase.ru";
-    private int publicListSize = 10;
+    @Value("${app.id_generator}")
+    private int idGenerator ;
+    @Value("${app.host}")
+    private String host;
+    @Value("${app.public_list_size}")
+    private int publicListSize;
 
     @Override
     public PasteCaseResponse getByHash(String hash) {
@@ -47,7 +53,9 @@ public class PasteCaseServiceImpl implements PasteCaseService{
         pasteCaseEntity.setId(hash);
         pasteCaseEntity.setHash(Integer.toHexString(hash));
         pasteCaseEntity.setPublic(request.getPublicStatus() == PublicStatus.PUBLIC);
+        //map from request
         repository.add(pasteCaseEntity);
+        // map to response
         return new PasteCaseUrlResponse(host + "/" + pasteCaseEntity.getHash());
     }
 
